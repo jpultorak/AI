@@ -32,7 +32,7 @@ def add_spaces(s, words):
 if __name__ == '__main__':
     # words = set(['matematyk', 'matematyka', 'a', 'ale', 'mur'])
     # res = add_spaces('matematykalemur', words)
-    with open('words_for_ai1.txt', 'r', encoding='utf-8') as wrd, open('pan_tadeusz_bez_spacji.txt', 'r', encoding='utf-8') as inp, open('zad2_output.txt', 'w', encoding='utf-8') as out:
+    with open('words_for_ai1.txt', 'r', encoding='utf-8') as wrd, open('pan_tadeusz_bez_spacji.txt', 'r', encoding='utf-8') as inp, open('pan_tadeusz.txt', 'w', encoding='utf-8') as out:
         words = set([word.strip('\n') for word in wrd.readlines()])
         lines = [line.strip('\n') for line in inp.readlines()]
         for line in lines:
