@@ -111,7 +111,7 @@ class Nonogram:
 if __name__ == '__main__':
     with open('zad5_input.txt', 'r') as inp, open('zad5_output.txt', 'w') as out:
         s = inp.readline()
-        no_rows, no_cols = int(s[0]), int(s[2])
+        no_rows, no_cols = int(s[0]), int(s[2:])
         rows = [int(inp.readline()) for _ in range(no_rows)]
         cols = [int(inp.readline()) for _ in range(no_cols)]
         # print(no_rows, no_cols)

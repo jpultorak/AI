@@ -1,3 +1,5 @@
+# Rozwiązanie zadania z ćwiczeń w 
+
 from random import sample
 from itertools import combinations
 
@@ -13,8 +15,9 @@ class Card:
 class Hand:
     def __init__(self, hand) -> None:
         self.hand = hand
+        self.ranks_dist = list(set([x.rank for x in self.hand]))
         self.ranks = [x.rank for x in self.hand]
-        self.counts = [self.ranks.count(x) for x in self.ranks]
+        self.counts = [self.ranks.count(x) for x in self.ranks_dist]
 
         
         self.is_flush = self.check_flush()
@@ -91,7 +94,7 @@ Deck_B = [Card(str(rank), suit) for rank in range(2, 11) for suit in ('c', 'h', 
 
 # hand_X composed of cards from deck_X
 # True if A wins, False otherwise
-def compare_hands(hand_A, hand_B):    
+def compare_hands(hand_A, hand_B):
     return hand_A.strength >= hand_B.strength
 
 def create_hand(deck):
@@ -121,11 +124,39 @@ def find_deck():
         if odds > 0.5:
             return (deck, odds)
     
+def pair_or_less_B():
+    cnt = 0
+    total = 0
+    for hand_B in combinations(Deck_B, 5):
+        h_b = Hand(hand_B)
+        total += 1
+        if h_b.strength == 0 or h_b.strength == 1:
+            #print(h_b, h_b.strength)
+            cnt += 1
+    return (cnt, total)
 
 if __name__ == '__main__':
-    res, odds = find_deck()
-    print([str(x) for x in res], approx_odds(10000, Deck_A, res), odds)
-    D = [Card('2', 'c'), Card('2', 'h'), Card('2', 's'), Card('2', 'd'), 
-         Card('3', 'c'), Card('3', 'd'), Card('3', 'h'), Card('3', 's'),
-         Card('4', 'c'), Card('5', 'c'), Card('6', 'c')]
-    print(approx_odds(1000, Deck_A, D))
+    #print(approx_odds(1000, Deck_A, Deck_B))
+
+   
+    # observation: deck B has always at least one pair
+    print(pair_or_less_B())
+    # based on above, deck B has 316956 out of 376992 hands which are two pair or high card
+    # we dont have to consider them
+    # takes a while, much faster than brute forcing all options
+    b_win, total = 0, 0
+    for hand_B in combinations(Deck_B, 5):
+        h_b = Hand(hand_B)
+        # h_b loses
+        if h_b.strength <= 1:
+            continue
+
+        for hand_A in combinations(Deck_A, 5):
+            h_a = Hand(hand_A)
+            if not compare_hands(h_a, h_b):
+                b_win += 1
+            total += 1
+
+    # print(b_win, total)
+    # result: 139193664/1646701056 ≈ 0.08452879986
+  
