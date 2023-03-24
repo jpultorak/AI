@@ -16,19 +16,20 @@ def opt_dist(row, row_desc):
         # place ith block
         block_len = row_desc[i-1]
         for j in range(1, n+1):
-            # placing the block on position j+p
-            for p in range(0, n-block_len-j+2):
+            # placing the block on position [l, p + block_len -1]
+            for l in range(j, n-block_len+2):
+                r = l+block_len-1
                 #print(i, j)
                 
                 # number of flips needed in the chosen positions
-                n1 = block_len - (ones[j+p+block_len-1] - ones[j+p-1])
-                # number of flips needed to turn [j, j+p-1] to blanks
+                n1 = block_len - (ones[r] - ones[l-1])
+                # number of flips needed to turn [j, l-1] to blanks
                 n2 = 0
-                if p != 0:
-                    n2 = ones[j+p-1] - ones[j-1]
+                if l != j:
+                    n2 = ones[j] - ones[l-1]
                 # after block we need a blank
                 n3 = 0 
-                if j+p+block_len != n+1 and row[j+p+block_len-1] == 1:
+                if p+block_len != n+1 and row[p+block_len-1] == 1:
                     n3 = 1
                 n4 = 1000
                 
