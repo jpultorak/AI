@@ -1,6 +1,6 @@
 from collections import deque
 import heapq
-import time
+
 class State:
 
     def __init__(self, K_pos, boxes, steps, prev, last_move) -> None:
@@ -189,7 +189,6 @@ class Board:
     
     def solve(self):
         cur_state = game.solve_bfs()
-        print("len:", cur_state.steps)
         states = [cur_state]
         while(cur_state.prev is not None):
             cur_state = cur_state.prev
@@ -205,17 +204,9 @@ class Board:
             res += path
         return res
     
-def test_state_class():
-    boxes = [(2, 1), (4, 3)]
-    state = State((3, 1), frozenset(boxes), 0, None)
-    state1 = State((3, 1), frozenset(boxes), 3, None)
-    A = set()
-    A.add(state)
-    print(A)
-    print(state1 in A)
 
 if __name__ == '__main__':
-    #test_state_class()
+   
     board = []
     with open('zad_input.txt', 'r') as inp, open('zad_output.txt', 'w') as out:
         for line in inp.readlines(): 
@@ -229,10 +220,7 @@ if __name__ == '__main__':
         n = len(board)
 
         game = Board(n, m, board)
-        print('solving!')
         solution = ''.join(game.solve())
-        print(len(solution))
-        out.write(solution)
-        #print(len(solution))
-        #print(solution)
     
+        out.write(solution)
+       
