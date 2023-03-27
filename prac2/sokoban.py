@@ -32,15 +32,34 @@ class Board:
         self.init_state, self.goals = self.clear_board()
         self.corners = self.precomp_corners()
     
+    def print_state(self, state):
+        print('\n---------\n')
+        for i in range(self.n):
+            for j in range(self.m):
+                if (i, j) in state.boxes and (i, j) in self.goals:
+                    print('*', end='')
+                elif (i, j) in state.boxes:
+                    print('B', end='')
+                elif (i, j) == state.K_pos and (i, j) in self.goals:
+                    print('+', end='')   
+                elif (i, j) in self.goals:
+                    print('G', end='')
+                elif (i, j) == state.K_pos:
+                    print('K', end='')     
+                else:
+                    print(board[i][j], end='')
+            print()
+        print('\n---------\n')
     # save box and player position to state, in order to simplify board description
     # returns initial state
     def ending_state(self, state):
         return self.goals == state.boxes
     
-    def dead_state(self, state):
+    def dead_state(self, state):      
         for box in state.boxes:
             if box in self.corners:
                 return True
+    
         return False
     
     def clear_board(self):
@@ -126,7 +145,7 @@ class Board:
 
         return states
 
-    def solve_bfs(self):
+    def solve_bfs(self, optimal):
         # Q is min heap
         Q = []
         heapq.heappush(Q, self.init_state)
@@ -134,17 +153,21 @@ class Board:
 
         while Q:
             state = heapq.heappop(Q)
-            visited.add(state)
+            
+            if optimal:
+                visited.add(state)
             if self.ending_state(state):
                 return state
-            
+            if self.dead_state(state):
+                continue
 
             states = self.generate_states(state, state.steps)
             for next_state in states:
-                if next_state in visited or self.dead_state(next_state):
+                if next_state in visited:
                     continue
-                
                 heapq.heappush(Q, next_state)
+                if not optimal:
+                    visited.add(next_state)
 
     def prev_cell(self, cell, move):
         r, c = cell
@@ -187,8 +210,8 @@ class Board:
                 Q.append((r, c))
         return []
     
-    def solve(self):
-        cur_state = game.solve_bfs()
+    def solve(self, optimal = True):
+        cur_state = game.solve_bfs(optimal)
         states = [cur_state]
         while(cur_state.prev is not None):
             cur_state = cur_state.prev
@@ -220,7 +243,8 @@ if __name__ == '__main__':
         n = len(board)
 
         game = Board(n, m, board)
-        solution = ''.join(game.solve())
+        
+        solution = ''.join(game.solve(False))
     
         out.write(solution)
        
