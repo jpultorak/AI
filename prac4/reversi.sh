@@ -1,2 +1,2 @@
 #!/bin/bash
-python reversi.py
+python player.py

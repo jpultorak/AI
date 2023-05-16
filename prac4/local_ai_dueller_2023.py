@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/~/dev/SI/prac4/env/bin python3
 # -*- coding: UTF-8 -*-
 '''
 Prosta sprawdzarka turniejowa.
