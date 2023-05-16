@@ -14,4 +14,5 @@
 - **nonograms.py**  Nonogram solver using CSP and backtracking
 - **sudoku.py**  python program, which given sudoku puzzle, generates code for SWI-PROLOG, which solves the problem 
 - **storms.py** python program, which given storms puzzle, generates code for SWI-PROLOG, which solves the problem 
-### P4 (Reversi, Jungle, Chess agents in works)
+### P4 (Reversi, Jungle, Chess agents (in works))
+- **reversi** todo: drop matrix representation of board, use bitmask instead. Transposition tables; Better eval function
