@@ -14,5 +14,7 @@
 - **nonograms.py**  Nonogram solver using CSP and backtracking
 - **sudoku.py**  python program, which given sudoku puzzle, generates code for SWI-PROLOG, which solves the problem 
 - **storms.py** python program, which given storms puzzle, generates code for SWI-PROLOG, which solves the problem 
-### P4 (Reversi, Jungle, Chess agents (in works))
-- **reversi** todo: drop matrix representation of board, use bitmask instead. Transposition tables; Better eval function
+### P4 (Othello, Jungle, Chess agents (in works))
+- #### **Othello** 
+    Current agent uses minimax with alpha-beta pruning. Evaluation function is a linear combination of disks balance, mobility, frontier size, and corners captured with different weights for early, mid and late game. I tested two ways of representing othello state: **agents/reversi_state.py** with 8x8 matrix as board, and  **agents/reversi_bitboard.py** with two bitarrays for white/black disks. [Flood fill](https://www.chessprogramming.org/Dumb7Fill)-like algorithm with bitshifts is used for move generation/resolution and computing evaluation function. Agent was tested in 1v1 matchups against other agents (**reversi/bosses**) using `python3 local_ai_dueller_2023.py [--verbose 0|1|2] [--num_games N] reversi PROGRAM0.sh PROGRAM1.sh`. Possible improvements: Transposition tables, openings books, better evaluation (e.g. neural networks to determine optimal weights of each function components).
+
