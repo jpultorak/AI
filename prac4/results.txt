@@ -1,5 +1,0 @@
-
-
-depth, balance_coef, mob_coef, corner_coef
-
-2, 0.5, 4, 15 -> 86/0/14

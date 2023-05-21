@@ -1,4 +1,4 @@
-#!/~/dev/SI/prac4/env/bin python3
+#!/usr/bin/env python
 # -*- coding: UTF-8 -*-
 '''
 Losowy agent do Reversi.
@@ -152,12 +152,12 @@ class Player(object):
                 self.my_player = 0
 
             moves = self.game.moves(self.my_player)
-            #better_moves = list(set(moves) & CORNERS)
+            better_moves = list(set(moves) & CORNERS)
             
-            # if #better_moves:
-            #     move = random.choice(better_moves)
-            #     self.game.do_move(move, self.my_player)                
-            if moves:
+            if better_moves:
+                move = random.choice(better_moves)
+                self.game.do_move(move, self.my_player)                
+            elif moves:
                 move = random.choice(moves)
                 self.game.do_move(move, self.my_player)
             else:
