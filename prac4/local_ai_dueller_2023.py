@@ -1,5 +1,6 @@
 #!/~/dev/SI/prac4/env/bin python3
 # -*- coding: UTF-8 -*-
+# command python3 local_ai_dueller_2023.py reversi /home/janek/dev/SI/prac4/reversi.sh /home/janek/dev/SI/prac4/random_reversi.sh --num_games 1000
 '''
 Prosta sprawdzarka turniejowa.
 '''
