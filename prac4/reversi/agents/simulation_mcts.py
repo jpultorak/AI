@@ -1,18 +1,18 @@
 #!/~/dev/SI/prac4/env/bin python3
 from random import choice
 from reversi_bitboard import ReversiState
-from operator import itemgetter
+from mcts import MCTS
 
 class Player:
     
     DEPTH = 2
-    TREE_DEPTH_SORT = 10 
-    
+    MCST_ITER = 100
     def __init__(self, my_player):
         self.reset(my_player)
-        
+    
     def reset(self, my_player):
         self.state = ReversiState()
+        self.tree = MCTS()
         self.my_player = my_player
         self.length = 0
 
@@ -30,16 +30,11 @@ class Player:
             return self.eval(state), None
         
         moves = state.moves_list()
-        
-        if self.TREE_DEPTH_SORT > 0:
-            
-            if max_player:
-                moves = [(move, -self.eval(state.move_new_state(move))) for move in moves]
-                moves.sort(key = itemgetter(1))
-            else:
-                moves = [(move, self.eval(state.move_new_state(move))) for move in moves]
-                moves.sort(key = itemgetter(1))
-            moves = [x[0] for x in moves]
+        # if self.TREE_DEPTH_SORT > 0:
+        #     if max_player:
+        #         moves.sort(key = cmp_to_key(self.cmp_moves_max))
+        #     else:
+        #         moves.sort(key = cmp_to_key(self.cmp_moves_min))
         
         if max_player:
             value, next_move = float('-inf'), None   
@@ -92,49 +87,42 @@ class Player:
 
         return a1*state.result() +  a2*state.move_balance() + a3*state.corners_taken() + a4*state.frontiers()
     
-    
     def simulate(self, N):
         win, draw, lose = 0, 0, 0
-        my_player = 1
+        mcts_player = 1
         for _ in range(0, N):
-            
-            self.reset(my_player)
+            self.reset(mcts_player)
             to_move = 0
-            # print("NEW GAME")
-            # self.state.draw()
             while not self.state.terminal():
-                # print(self.length)
-                # self.state.draw(verbose=3)
-                move = None
+
                 if self.my_player == to_move:
-                    depth = self.DEPTH
-                    if self.length <= 20:
-                         depth = 3
-                    elif self.length >= 54:
-                         depth = 6
-                    unused_value, move = self.alpha_beta(self.state, depth, float('-inf'), float('inf'), self.my_player)
-                    Player.TREE_DEPTH_SORT -= 1
+                    for _ in range(self.MCST_ITER):
+                        self.tree.playout(self.state)
+        
+                    self.state = self.tree.choose(self.state)
+                    
                 else:
-                    moves = self.state.moves_list()
-                    if moves:
-                        # a, b = tuple(map(int, input().split()))
-                        # move = (a, b)
-                        move = choice(moves)
-                
-                self.state.do_move(move)
+                    move = None
+                    # moves = self.state.moves_list()  # random agent
+                    # if moves:
+                    #     move = choice(moves)
+                    unused_value, move = self.alpha_beta(self.state, self.DEPTH, float('-inf'), float('inf'), 1-self.my_player) # α-β agent
+                    #move = tuple(map(int, input().split())) # human player
+                    #print(move)
+                    self.state.do_move(move)
                 to_move = 1-to_move
                 if move is not None:
                     self.length += 1
-
+        
             res = self.state.result()
             if res == 0:
                 draw += 1
-            elif res > 0 and my_player == 1 or res < 0 and my_player == 0:
+            elif res > 0 and mcts_player == 1 or res < 0 and mcts_player == 0:
                 win += 1
             else:
                 lose += 1
             # change who goes first
-            my_player = 1-my_player
+            mcts_player = 1-mcts_player
     
         return (win, draw, lose)
         
@@ -142,4 +130,4 @@ class Player:
             
 if __name__ == '__main__':
     player = Player(1)
-    print(player.simulate(100))
+    print(player.simulate(10))

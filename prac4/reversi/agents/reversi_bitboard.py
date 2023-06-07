@@ -1,7 +1,6 @@
 #!/~/dev/SI/prac4/env/bin python3
-import numpy as np
-from copy import deepcopy
-from bitarray import bitarray, util
+from bitarray import bitarray, frozenbitarray ,util
+from random import choice
 
 class ReversiState:
     M = 8
@@ -43,31 +42,40 @@ class ReversiState:
                 0, # Up
                 0  # Up-right
         ]
+    
     def __init__(self, state=None):
         if state is None:
             self.default_constructor()
         else:
             self.copy_constructor(state)
 
+    @staticmethod
+    def create_copy(state):
+        new = ReversiState(state)
+        return new
+    
     def copy_constructor(self, state):
+
         self.bits = [None, None]
         self.bits[0], self.bits[1] = state.bits[0].copy(), state.bits[1].copy()
         self.player = state.player
 
     def default_constructor(self):
-        # a = bitarray('0000000000000000000100000101100000001000010001000000000000000000')
-        # b = bitarray('0000000000000000000000000000000011110000000000000000000000000000')
-        # self.bits = [a, b]
         self.bits = [self.INIT0.copy(), self.INIT1.copy()]
-        self.player = 0
+        self.player = 0  
+
+    def __hash__(self):
+        b0, b1 = frozenbitarray(self.bits[0]), frozenbitarray(self.bits[1])
+        return hash((b0, b1, self.player))
     
-    @staticmethod
-    def int_to_coords(val):
-        x = val % 8
-        y = val // 8
-        return (x, y)
+    def __eq__(self, other):
+        return self.player == other.player and self.bits == other.bits
     
-    @staticmethod
+    @staticmethod 
+    def int_to_coords(x):
+        return (x % 8, x // 8)
+    
+    @staticmethod 
     def coord_to_int(xy):
         return 8*(xy[1]) + xy[0]
     
@@ -75,29 +83,29 @@ class ReversiState:
         return ~(self.bits[0] | self.bits[1])
     
     def shift(self, mask, dir):
-        # rightshift
-        if dir <= 3:
+        if dir <= 3:  # rightshift
             return (mask >> self.RSHIFTS[dir]) & self.MASKS[dir]
         return (mask << self.LSHIFTS[dir]) & self.MASKS[dir]
-
-    def get(self, x, y):
-        if self.bits[0][(self.coord_to_int((x, y)))]:
-            return 0
-        if self.bits[1][(self.coord_to_int((x, y)))]:
-            return 1
-        return -1
     
     def draw(self, verbose =3):
+        def get(x, y):
+            
+            if self.bits[0][(self.coord_to_int((x, y)))]:
+                return 0
+            if self.bits[1][(self.coord_to_int((x, y)))]:
+                return 1
+            return -1
+    
         if verbose >= 3:
             print(f"-------------------\n{self.bits[0]}\n{self.bits[1]}")
         if verbose >= 2:
-           print(f"Moves:{self.moves_from_mask(self.moves())}")
+           print(f"Moves:{self.moves_list()}")
         if verbose >= 1:
            print(f"EVAL:{self.eval()}\nTO MOVE:{self.player}")
         for i in range(self.M):
             res = []
             for j in range(self.M):
-                b = self.get(j, i)
+                b = get(j, i)
                 if b == -1:
                     res.append('.')
                 elif b == 1:
@@ -107,13 +115,7 @@ class ReversiState:
             print(''.join(res))
         print('')
     
-    def moves_from_mask(self, b):
-        res = []
-        for i in range(0, 64):
-            if b[i]:
-                res.append(self.int_to_coords(i))
-        return res
-    # for given player, generate possible moves in given board state
+    # for given player, generate possible moves as a mask in given board state
     # if player arg is passed consider his moves regardless of actual state
     def moves(self, player = None):
         if player is None:
@@ -129,7 +131,7 @@ class ReversiState:
             moves_dir |= self.shift(moves_dir, dir) & self.bits[1-player]
 
             legal_moves |= self.shift(moves_dir, dir) & self.free_fields()
-        # 1 if can place
+
         return legal_moves
     
     def print_mask(self, mask):
@@ -180,6 +182,36 @@ class ReversiState:
         res0 = self.bits[0].count()
         return 100*(res1-res0)/(res1+res0)
     
+    # important assumption: current state is terminal
+    def utility(self):
+        res1 = self.bits[1].count()
+        res0 = self.bits[0].count()
+        if res1 > res0:
+            return 1
+        elif res1 == res0:
+            return 0.5
+        else:
+            return 0
+    
+    # get children of current state as a list of coords
+    def moves_list(self):
+        b = self.moves()
+        if not b.any() and not self.terminal():  # since state is not terminal, pass is valid move
+            return [None]
+        return [self.int_to_coords(i) for i in range(64) if b[i]]
+   
+    def random_child(self):
+        moves = self.moves_list()
+        if not moves:
+            return self.move_new_state(None)
+        return self.move_new_state(choice(moves))
+    
+    def generate_successors(self):
+        if self.terminal():
+            return tuple()
+        moves = self.moves_list()
+        return tuple([self.move_new_state(move) for move in moves])
+    
     def move_balance(self):
         b0, b1 = self.moves(0).count(), self.moves(1).count()
         if b1 + b0 == 0:
@@ -214,12 +246,4 @@ class ReversiState:
     
 
 if __name__ == '__main__':
-    
-    game = ReversiState()
-    game.draw() 
-    game.do_move((2, 6))
-    game.draw()
-    # print(game.terminal())
-    # game.do_move((2, 2))
-    # game.draw()
-
+    pass

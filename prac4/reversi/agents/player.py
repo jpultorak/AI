@@ -1,5 +1,4 @@
 #!/~/dev/SI/prac4/env/bin python3
-import numpy as np
 import sys
 from reversi_bitboard import ReversiState
 
@@ -31,9 +30,9 @@ class Player:
         if state.terminal():
             res = state.result()
             if res > 0:
-                return np.inf, None
+                return float('inf'), None
             elif res < 0:
-                return -np.inf, None
+                return float('-inf'), None
             else:
                 return 0, None
 
@@ -48,7 +47,7 @@ class Player:
         #         moves.sort(key = cmp_to_key(self.cmp_moves_min))
         
         if max_player:
-            value, next_move = -np.inf, None   
+            value, next_move = float('-inf'), None   
             for mv, b in enumerate(moves):
                 if not b:
                     continue
@@ -66,7 +65,7 @@ class Player:
                     break
 
         else:
-            value, next_move = np.inf, None
+            value, next_move = float('inf'), None
             for mv, b in enumerate(moves):
                 if not b:
                     continue
@@ -124,7 +123,7 @@ class Player:
                 assert cmd == 'UGO'
                 self.my_player = 0
 
-            value, move = self.alpha_beta(self.state, self.DEPTH, -np.inf, np.inf, self.my_player)
+            value, move = self.alpha_beta(self.state, self.DEPTH, float('-inf'), float('inf'), self.my_player)
             #print(move, file=sys.stderr)
             if move:
                 self.state.do_move(move)
