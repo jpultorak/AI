@@ -1,2 +1,2 @@
 #!/bin/bash
-python player.py
+python3 /home/janek/dev/SI/prac4/reversi/agents/player.py

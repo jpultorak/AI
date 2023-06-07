@@ -1,3 +1,3 @@
 #!/bin/bash
 
-python3 desdemona.py 3
+python3 /home/janek/dev/SI/prac4/reversi/bosses/desdemona.py 3

@@ -1,2 +1,2 @@
 #!/bin/bash
-python random_player.py
+python3 /home/janek/dev/SI/prac4/reversi/bosses/random_player.py

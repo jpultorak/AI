@@ -1,3 +1,3 @@
 #!/bin/bash
 
-python3 cassio.py 2
+python3 /home/janek/dev/SI/prac4/reversi/bosses/cassio.py 2
