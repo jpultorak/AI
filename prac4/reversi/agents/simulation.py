@@ -5,7 +5,7 @@ from operator import itemgetter
 
 class Player:
     
-    DEPTH = 2
+    DEPTH = 3
     TREE_DEPTH_SORT = 10 
     
     def __init__(self, my_player):
@@ -52,8 +52,8 @@ class Player:
                     next_move = move
 
                 alpha = max(value, alpha)
+                
                 if value >= beta:
-                   #print("max pruned")
                     break
 
         else:
@@ -66,8 +66,9 @@ class Player:
                     value = child_value
                     next_move = move
 
+                beta = min(value, beta)
+
                 if value <= alpha:
-                    #print("min pruned", file=sys.stderr)
                     break
         return value, next_move
     
@@ -100,18 +101,14 @@ class Player:
             
             self.reset(my_player)
             to_move = 0
-            # print("NEW GAME")
-            # self.state.draw()
             while not self.state.terminal():
-                # print(self.length)
-                # self.state.draw(verbose=3)
                 move = None
                 if self.my_player == to_move:
                     depth = self.DEPTH
-                    if self.length <= 20:
-                         depth = 3
-                    elif self.length >= 54:
-                         depth = 6
+                    # if self.length <= 20:
+                    #      depth = 3
+                    # elif self.length >= 54:
+                    #      depth = 6
                     unused_value, move = self.alpha_beta(self.state, depth, float('-inf'), float('inf'), self.my_player)
                     Player.TREE_DEPTH_SORT -= 1
                 else:

@@ -514,7 +514,7 @@ class WrongMove(Exception):
 
 
 def play(game_class, num_games, p0cmd, p1cmd,
-         ready_timeout=10, move_timeout=10, game_timeout=60):
+         ready_timeout=10, move_timeout=100, game_timeout=600):
     """Play a game between player p0 and p1.
     """
     p = {}

@@ -2,7 +2,6 @@
 import sys
 from reversi_bitboard import ReversiState
 
-
 class Player:
     DEPTH = 4
     TREE_DEPTH_SORT = 0
@@ -76,7 +75,7 @@ class Player:
                 if child_value <= value:
                     value = child_value
                     next_move = move
-
+                beta = min(value, beta)
                 if value <= alpha:
                     #print("min pruned", file=sys.stderr)
                     break
@@ -112,6 +111,10 @@ class Player:
                 move = tuple((int(m) for m in args[2:]))
                 if move == (-1, -1):
                     move = None
+                
+                if move is not None:
+                    self.length += 1
+
                 self.state.do_move(move)
                 # self.state.draw(2)
             elif cmd == 'ONEMORE':
@@ -123,10 +126,16 @@ class Player:
                 assert cmd == 'UGO'
                 self.my_player = 0
 
-            value, move = self.alpha_beta(self.state, self.DEPTH, float('-inf'), float('inf'), self.my_player)
+            depth = self.DEPTH
+            if self.length <= 10:
+                depth = 5
+            # elif self.length >=52:
+            #     depth = 8
+            value, move = self.alpha_beta(self.state, depth, float('-inf'), float('inf'), self.my_player)
             #print(move, file=sys.stderr)
             if move:
                 self.state.do_move(move)
+                self.length += 1
             else:
                 self.state.do_move(None)
                 move = (-1, -1)

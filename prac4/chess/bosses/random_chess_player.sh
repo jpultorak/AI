@@ -1,3 +1,3 @@
 #!/bin/bash
 
-python3 chess_random.py
+python3 /home/janek/dev/SI/prac4/chess/bosses/chess_random.py

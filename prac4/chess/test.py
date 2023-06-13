@@ -4,9 +4,6 @@ import chess.gaviota
 
 board = chess.Board()
 
-w_knights = board.pieces(piece_type=chess.KNIGHT, color=True)
-for q in sq
-print(w_knights)
 
 # mv = chess.Move.from_uci('e2e4')
 # board.push(mv)

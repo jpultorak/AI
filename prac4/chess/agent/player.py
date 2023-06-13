@@ -1,10 +1,15 @@
 import chess
 import chess.polyglot
-from time import sleep
+from os import environ
+environ['PYGAME_HIDE_SUPPORT_PROMPT'] = '1'
 from chessboard import display
+from functools import cmp_to_key
+import sys
+from time import sleep
 
 class Player():
     DEPTH = 4
+    QUIESENCE_DEPTH = 2
     # mobility factors
     KNIGHT_MOBILITY = 5.5
     BISHOP_MOBILITY = 4
@@ -21,17 +26,17 @@ class Player():
         5, -5,-10,  0,  0,-10, -5,  5,
         5, 10, 10,-20,-20, 10, 10,  5,
         0,  0,  0,  0,  0,  0,  0,  0]
-    
+
     PAWN_WHITE = [
-        0,      0,      0,      0,      0,      0,      0,      0,
-        5,      10,     10,     -20,    -20,    10,     10,     5,
-        5,      -5,     -10,    0,      0,      -10,    -5,     5,
-        0,      0,      0,      20,     20,     0,      0,      0,
-        5,      5,      10,     25,     25,     10,     5,      5,
-        10,     10,     20,     30,     30,     20,     10,     10,
-        50,     50,     50,     50,     50,     50,     50,     50,
-        0,      0,      0,      0,      0,      0,      0,      0]
-    
+        0,   0,   0,   0,   0,   0,   0,   0,
+        5,   10,  10,  -20, -20, 10,  10,  5,
+        5,   -5,  -10, 0,   0,   -10, -5,  5,
+        0,   0,   0,   20,  20,  0,   0,   0,
+        5,   5,   10,  25,  25,  10,  5,   5,
+        10,  10,  20,  30,  30,  20,  10,  10,
+        50,  50,  50,  50,  50,  50,  50,  50,
+        0,   0,   0,   0,   0,   0,   0,   0]
+
     KNIGHT_BLACK = [
         -50,-40,-30,-30,-30,-30,-40,-50,
         -40,-20,  0,  0,  0,  0,-20,-40,
@@ -52,7 +57,7 @@ class Player():
         -10, 10, 10, 10, 10, 10, 10,-10,
         -10,  5,  0,  0,  0,  0,  5,-10,
         -20,-10,-10,-10,-10,-10,-10,-20]
-    
+
     BISHOP_WHITE = [
         -20, -10, -10, -10, -10, -10, -10, -20,
         -10, 5, 0, 0, 0, 0, 5, -10,
@@ -62,7 +67,7 @@ class Player():
         -10, 0, 5, 10, 10, 5, 0, -10,
         -10, 0, 0, 0, 0, 0, 0, -10,
         -20, -10, -10, -10, -10, -10, -10, -20]
-    
+
     ROOK_BLACK = [
         0,  0,  0,  0,  0,  0,  0,  0,
         5, 10, 10, 10, 10, 10, 10,  5,
@@ -72,7 +77,7 @@ class Player():
         -5,  0,  0,  0,  0,  0,  0, -5,
         -5,  0,  0,  0,  0,  0,  0, -5,
         0,  0,  0,  5,  5,  0,  0,  0]
-    
+
     ROOK_WHITE = [
         0, 0, 0, 5, 5, 0, 0, 0,
         -5, 0, 0, 0, 0, 0, 0, -5,
@@ -82,7 +87,7 @@ class Player():
         -5, 0, 0, 0, 0, 0, 0, -5,
         5, 10, 10, 10, 10, 10, 10, 5,
         0, 0, 0, 0, 0, 0, 0, 0]
-    
+
     QUEEN_BLACK = [
         -20,-10,-10, -5, -5,-10,-10,-20,
         -10, 0,  0,  0,  0,  0,  0,-10,
@@ -92,38 +97,50 @@ class Player():
         -10, 5,  5,  5,  5,  5,  0,-10,
         -10, 0,  5,  0,  0,  0,  0,-10,
         -20,-10,-10, -5, -5,-10,-10,-20]
-    
+
     QUEEN_WHITE = QUEEN_BLACK
 
-    KING_MID_WHITE = [20,     30,     10,     0,      0,      10,     30,     20,
-                20,     20,     0,      0,      0,      0,      20,     20,
-                -10,    -20,    -20,    -20,    -20,    -20,    -20,    -10,
-                -20,    -30,    -30,    -40,    -40,    -30,    -30,    -20,
-                -30,    -40,    -40,    -50,    -50,    -40,    -40,    -30,
-                -30,    -40,    -40,    -50,    -50,    -40,    -40,    -30,
-                -30,    -40,    -40,    -50,    -50,    -40,    -40,    -30,
-                -30,    -40,    -40,    -50,    -50,    -40,    -40,    -30]
-    
-    KING_MID_BLACK = [-30,-40,-40,-50,-50,-40,-40,-30,
-                -30,-40,-40,-50,-50,-40,-40,-30,
-                -30,-40,-40,-50,-50,-40,-40,-30,
-                -30,-40,-40,-50,-50,-40,-40,-30,
-                -20,-30,-30,-40,-40,-30,-30,-20,
-                -10,-20,-20,-20,-20,-20,-20,-10,
-                20, 20,  0,  0,  0,  0, 20, 20,
-                20, 30, 10,  0,  0, 10, 30, 20]
-    
-    KING_END = [-50,    -30,    -30,    -30,    -30,    -30,    -30,    -50,
-                -30,    -30,    0,      0,      0,      0,      -30,    -30,
-                -30,    -10,    20,     30,     30,     20,     -10,    -30,
-                -30,    -10,    30,     40,     40,     30,     -10,    -30,
-                -30,    -10,    30,     40,     40,     30,     -10,    -30,
-                -30,    -10,    20,     30,     30,     20,     -10,    -30,
-                -30,    -20,    -10,    0,      0,      -10,    -20,    -30,
-                -50,    -40,    -30,    -20,    -20,    -30,    -40,    -50]
-    
-    PIECES_TABLES = [(PAWN_BLACK, PAWN_WHITE), 
-                     (KNIGHT_BLACK, KNIGHT_WHITE), 
+    KING_MID_WHITE = [
+        20, 40, 10, 0, 0, 10, 40, 20,
+        20, 20, 0,  0,  0,   0,   20,  20,
+        -10, -20, -20, -20, -20, -20, -20, -10,
+        -20, -30, -30, -40, -40, -30, -30, -20,
+        -30, -40, -40, -50, -50, -40, -40, -30,
+        -30, -40, -40, -50, -50, -40, -40, -30,
+        -30, -40, -40, -50, -50, -40, -40, -30,
+        -30, -40, -40, -50, -50, -40, -40, -30]
+
+    KING_MID_BLACK = [
+        -30,-40,-40,-50,-50,-40,-40,-30,
+        -30,-40,-40,-50,-50,-40,-40,-30,
+        -30,-40,-40,-50,-50,-40,-40,-30,
+        -30,-40,-40,-50,-50,-40,-40,-30,
+        -20,-30,-30,-40,-40,-30,-30,-20,
+        -10,-20,-20,-20,-20,-20,-20,-10,
+        20, 20,  0,  0,  0,  0, 20, 20,
+        20, 30, 10,  0,  0, 10, 30, 20]
+
+    KING_END = [
+        -50, -30, -30, -30, -30, -30, -30, -50,
+        -30, -30, 0,   0,   0,   0,   -30, -30,
+        -30, -10, 20,  30,  30,  20,  -10, -30,
+        -30, -10, 30,  40,  40,  30,  -10, -30,
+        -30, -10, 30,  40,  40,  30,  -10, -30,
+        -30, -10, 20,  30,  30,  20,  -10, -30,
+        -30, -20, -10, 0,   0,   -10, -20, -30,
+        -50, -40, -30, -20, -20, -30, -40, -50]
+
+    MVV_LVA = [
+    [15, 14, 13, 12, 11, 10], # victim P; attacker: P N B R Q K
+    [25, 24, 23, 22, 21, 20], # victim N
+    [35, 34, 33, 32, 31, 30], # victim B
+    [45, 44, 43, 42, 41, 40], # victim R
+    [55, 54, 53, 52, 51, 50], # victim Q
+    [0, 0, 0, 0, 0, 0]        # victim K
+    ]
+
+    PST = [(PAWN_BLACK, PAWN_WHITE),
+                     (KNIGHT_BLACK, KNIGHT_WHITE),
                      (BISHOP_BLACK, BISHOP_WHITE),
                      (ROOK_BLACK, ROOK_WHITE),
                      (QUEEN_BLACK, QUEEN_WHITE)]
@@ -136,8 +153,14 @@ class Player():
         chess.KING : 0
     }
     def __init__(self, white=False):
+        self.reset(white)
+
+    def reset(self, white=False):
         self.board = chess.Board()
         self.color = white # 1 if white, 0 otherwise
+        self.pieces_count = 14 # major (Q, R) and minor (N, B) pieces count
+        self.eval = 0
+        self.say('RDY')
 
     def get_attacked(self, piece, color):
         squares = self.board.pieces(piece_type=piece, color=color)
@@ -146,7 +169,7 @@ class Player():
         for x in a:
             attacked.update(x)
         return attacked
-    
+
     def mobility(self):
         res = 0
         w_pawns, b_pawns = self.get_attacked(chess.KNIGHT, True), self.get_attacked(chess.KNIGHT, False)
@@ -171,75 +194,86 @@ class Player():
 
         return res
 
-    #def king_safety(self):
+    def evaluate(self):
+        return self.eval #+ self.mobility()
 
-    def eval(self):
-        res = 0
-        for piece in [chess.PAWN, chess.KNIGHT, chess.BISHOP, chess.ROOK, chess.QUEEN]:
-            white_squares = self.board.pieces(piece_type = piece, color=True)
-            black_squares = self.board.pieces(piece_type = piece, color=False)
-            res += Player.VAL[piece]*len(white_squares)
-            res -= Player.VAL[piece]*len(black_squares)
+    def move_ordering(self, move1, move2):
+        c1, c2 = self.board.is_capture(move1), self.board.is_capture(move2)
+        if c1 and c2:
 
-            for square in white_squares:
-                res += Player.PIECES_TABLES[piece-1][1][square]
+            attacker, victim = self.board.piece_at(move1.from_square).piece_type-1, self.board.piece_at(move1.to_square)
+            if victim is None: # exception: en_passant does not 'directly' capture pawn
+                victim = chess.PAWN-1
+            else:
+                victim = victim.piece_type-1
+            val1 = Player.MVV_LVA[victim][attacker]
 
-            for square in black_squares:
-                res -= Player.PIECES_TABLES[piece-1][0][square]
-        
-        white_king, black_king = self.board.king(color=True), self.board.king(color=False)
+            attacker, victim = self.board.piece_at(move2.from_square).piece_type-1, self.board.piece_at(move2.to_square)
+            if victim is None: # exception: en_passant does not 'directly' capture pawn
+                victim = chess.PAWN-1
+            else:
+                victim = victim.piece_type-1
+            val2 = Player.MVV_LVA[victim][attacker]
+            return val1 - val2
 
-        queens = (self.board.pieces(piece_type=chess.QUEEN, color=True), self.board.pieces(piece_type=chess.QUEEN, color=False))  # simple endgame condition - no queens
-        if any(queens):
-           res += Player.KING_MID_WHITE[white_king]
-           res -= Player.KING_MID_BLACK[black_king]
-        else:
-            res += Player.KING_END[white_king]
-            res -= Player.KING_END[black_king]
+        return c1 - c2
 
-        return res + self.mobility()
-    
-    def alpha_beta(self, alpha, beta, depth, max_player):
-        outcome = self.board.outcome()
-        if outcome is not None: # game has ended 
+    def alpha_beta(self, alpha, beta, depth, max_player, capture):
+        f = False
+        if self.board.fullmove_number >= 40:
+            f = True
+        outcome = self.board.outcome(claim_draw=f)
+        if outcome is not None: # game has ended
             res = outcome.winner
             if res is None:
                 return 0, None
             if res:
                 return float('inf'), None
+
             return float('-inf'), None
 
-        if depth == 0 :
+        if depth == 0:
+            #if self.board.is_check() or capture:
+             #   return self.quiescence_search(alpha, beta, Player.QUIESENCE_DEPTH, max_player)
             #print(self.board.unicode(),'\n',self.eval(),'\n', )
-            return self.eval(), None
-      
+            return self.evaluate(), None
+
+
         
-        next_move =  None
+        moves = list(self.board.legal_moves)
+        moves.sort(key=cmp_to_key(self.move_ordering), reverse=True)
+        next_move =  moves[0]
+
         if max_player:
             value = float('-inf')
-            for move in self.board.legal_moves:
-            
-                self.board.push(move) # do move
-                # if depth == 1 and (self.board.is_check()): # if the situation is dynamic, increase the depth
-                #     depth = 2
-                child_value, unused_move = self.alpha_beta(alpha, beta, depth-1, False) 
-                self.board.pop() # undo move
+            for move in moves:
+                x, y = self.eval, self.pieces_count
+                capture = self.board.is_capture(move)
+                self.do_move(move)
+                
+                child_value, unused_move = self.alpha_beta(alpha, beta, depth-1, False, capture)
+
+                self.board.pop()
+                self.eval, self.pieces_count = x, y # undo move
 
                 if child_value > value:
                     value = child_value
                     next_move = move
                     alpha = max(value, alpha)
-                
+
                 if value >= beta:
                     break
         else:
             value = float('inf')
-            for move in self.board.legal_moves:
-                self.board.push(move) # do move
-                # if depth == 1 and (self.board.is_check()): # if the situation is dynamic, increase the depth
-                #     depth = 2
-                child_value, unused_move = self.alpha_beta(alpha, beta, depth-1, True) 
-                self.board.pop() # undo move
+            for move in moves:
+                x, y = self.eval, self.pieces_count
+                capture = self.board.is_capture(move)
+                self.do_move(move)  # do move
+
+                child_value, unused_move = self.alpha_beta(alpha, beta, depth-1, True, capture)
+
+                self.eval, self.pieces_count = x, y # undo move
+                self.board.pop()
 
                 if child_value < value:
                     value = child_value
@@ -248,46 +282,166 @@ class Player():
 
                 if value <= alpha:
                     break
-            
+
         return value, next_move
     
-    def do_move(self):
-        _val, move = self.alpha_beta(float('-inf'), float('inf'), Player.DEPTH, self.color)
+    def quiescence_search(self, alpha, beta, depth, max_player):
+        outcome = self.board.outcome()
+        if outcome is not None: # game has ended
+            res = outcome.winner
+            if res is None:
+                return 0, None
+            if res:
+                return float('inf'), None
+
+            return float('-inf'), None
+
+        if depth == 0 :
+            return self.evaluate(), None
+
+        moves = [x for x in self.board.legal_moves if self.board.is_capture(x) or self.board.is_check()] 
+        if not moves:
+            return self.evaluate(), None
+        
+        moves.sort(key=cmp_to_key(self.move_ordering), reverse=True)
+        next_move =  moves[0]
+
+        if max_player:
+            value = float('-inf')
+            for move in moves:
+                x, y = self.eval, self.pieces_count
+                self.do_move(move)
+                
+                child_value, unused_move = self.quiescence_search(alpha, beta, depth-1, False)
+
+                self.board.pop()
+                self.eval, self.pieces_count = x, y # undo move
+
+                if child_value > value:
+                    value = child_value
+                    next_move = move
+                    alpha = max(value, alpha)
+
+                if value >= beta:
+                    break
+        else:
+            value = float('inf')
+            for move in moves:
+                x, y = self.eval, self.pieces_count
+                self.do_move(move)  # do move
+
+                child_value, unused_move = self.quiescence_search(alpha, beta, depth-1, True)
+
+                self.eval, self.pieces_count = x, y # undo move
+                self.board.pop()
+
+                if child_value < value:
+                    value = child_value
+                    next_move = move
+                    beta = min(value, beta)
+
+                if value <= alpha:
+                    break
+
+        return value, next_move
+    
+    def is_endgame(self):
+        return self.pieces_count <= 6
+
+    def put_remove_piece(self, piece, square, remove):
+        if piece.piece_type not in (chess.PAWN, chess.KING):
+            if remove:
+                self.pieces_count -= 1
+            else:
+                self.pieces_count += 1
+        
+        factor = 1
+        if not piece.color:
+            factor = -1
+        if remove:
+            factor *= -1
+
+        self.eval += factor*Player.VAL[piece.piece_type]
+        if piece.piece_type != chess.KING:
+            self.eval += factor*Player.PST[piece.piece_type-1][piece.color][square]
+            return
+
+        if self.is_endgame():
+            self.eval += factor*self.KING_END[square]
+            return
+
+        if piece.color:
+            self.eval += factor*self.KING_MID_WHITE[square]
+        else:
+            self.eval += factor*self.KING_MID_BLACK[square]
+
+    def do_move(self, move):
+        
+        sq_from, sq_to = move.from_square, move.to_square
+        piece_from, piece_to = self.board.piece_at(sq_from), self.board.piece_at(sq_to)
+        if piece_to is not None:  # remove taken piece
+            self.put_remove_piece(piece_to, sq_to, remove=True)
+
+        self.put_remove_piece(piece_from, sq_from, remove=True)
+        if move.promotion is not None:
+            self.put_remove_piece(chess.Piece(move.promotion, self.board.turn), sq_to, remove=False)
+        else:
+            self.put_remove_piece(piece_from, sq_to, remove=False)
+
+        self.board.push(move)
+
+    def select_move(self, max_time = 1000):  # max_time in ms
+        _val, move = self.alpha_beta(float('-inf'), float('inf'), self.DEPTH, self.color, False)
         return move
 
-if __name__ == '__main__':
-    computer_white = True
-    agent = Player(white=computer_white)
+    #---------------------Communication-------------------------#
+    def say(self, what):
+        sys.stdout.write(what)
+        sys.stdout.write('\n')
+        sys.stdout.flush()
 
-    game_board = display.start()
-    
-    with chess.polyglot.open_reader('baron30.bin') as reader:
+    def hear(self):
+        line = sys.stdin.readline().split()
+        return line[0], line[1:]
+
+    def loop(self):
         while True:
+            # sleep(0.5)
+            # display.check_for_quit()
+            # display.update(self.board.fen(), game_board)
+            cmd, args = self.hear()
+            if cmd == 'HEDID':
+                unused_move_timeout, unused_game_timeout = args[:2]
+                move = args[2]
+                self.do_move(chess.Move.from_uci(move))
 
-            print(agent.eval(), agent.board.fen())
-            display.check_for_quit()
-            display.update(agent.board.fen(), game_board)
+            elif cmd == 'ONEMORE':
+                #print("RESET", file=sys.stderr)
+                self.reset()
+                continue
 
-            if agent.board.turn == agent.color:
-                try:
-                    entry = reader.choice(agent.board)
-                    move = entry.move
-                except IndexError:
-                    print("No matching opening!")
-                    move = agent.do_move()
-            else:
-                move = None
-                while not agent.board.is_legal(move):
-                    move = input("Input move in uci format (e.g. e2e4): ")
-                    try:
-                        move = chess.Move.from_uci(move)
-                    except:
-                        move = None
-                        print("Not a legal move!")
-        
-            agent.board.push(move)
-            if agent.board.is_game_over():
-                display.update(agent.board.fen(), game_board)
-                sleep(3)
+            elif cmd == 'BYE':
                 break
-display.terminate()
+            else:
+                assert cmd == 'UGO'
+                #assert not self.game.move_list
+               # print("WE ARE WHITE", file=sys.stderr)
+                self.color = 1
+            try:
+                entry = reader.choice(agent.board)
+                move = entry.move
+            except IndexError:
+                #print('No matching opening', file=sys.stderr)
+                
+                move = agent.select_move()
+
+            #print(agent.board.fen(), file=sys.stderr)
+            self.do_move(move)
+            self.say('IDO ' + str(move))
+
+if __name__ == '__main__':
+   # game_board = display.start()
+    with chess.polyglot.open_reader('/home/janek/dev/SI/prac4/chess/data/baron30.bin') as reader:
+        agent = Player()
+        agent.loop()
+   

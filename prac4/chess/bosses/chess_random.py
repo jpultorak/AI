@@ -37,7 +37,7 @@ class Chess:
         return [str(m) for m in self.board.legal_moves]
         
     def draw(self):
-        print (self.board)    
+        print (self.board)
 
 
 class Player(object):
