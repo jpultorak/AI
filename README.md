@@ -19,6 +19,6 @@
     Current agent uses minimax with alpha-beta pruning. Evaluation function is a linear combination of disks balance, mobility, frontier size, and corners captured with different weights for early, mid and late game. I tested two ways of representing othello state: **agents/reversi_state.py** with 8x8 matrix as board, and  **agents/reversi_bitboard.py** with two bitarrays for white/black disks. [Flood fill](https://www.chessprogramming.org/Dumb7Fill)-like algorithm with bitshifts is used for move generation/resolution and computing evaluation function. Agent was tested in 1v1 matchups against other agents (**reversi/bosses**) using `python3 local_ai_dueller_2023.py [--verbose 0|1|2] [--num_games N] reversi PROGRAM0.sh PROGRAM1.sh`. Possible improvements: Transposition tables, openings books, better evaluation (e.g. neural networks to determine optimal weights of each function components).
     
 - #### **Chess** 
-    Agent uses alpha beta search with quiescence search, with MVV-LVA heuristic for move ordering. Position evaluation consists of material balance, PPT, mobility and king safety, all depending on stage of the game. For early stages agent has got opening book implemented. 
+    Agent uses alpha beta search with quiescence search, with MVV-LVA heuristic for move ordering. Position evaluation consists of material balance, PST, mobility and king safety, all depending on stage of the game. For early stages agent has got opening book implemented. 
 
 
