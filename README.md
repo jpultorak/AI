@@ -22,3 +22,6 @@
     Agent uses alpha beta search with quiescence search, with MVV-LVA heuristic for move ordering. Position evaluation consists of material balance, PST, mobility and king safety, all depending on stage of the game. For early stages agent has got opening book implemented. 
 
 
+### P5 (Chess agents tournament)
+- Each agent has pieces values and mobility as its parameters. Population of 80 agents was randomly selected, and tournament was performed. Agents used quinesence search with depth 2. Results turned out to be consistent with common chess pieces valuation i.e queen > rook > bishop > knight.
+
