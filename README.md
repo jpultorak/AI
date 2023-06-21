@@ -23,5 +23,5 @@
 
 
 ### P5 (Chess agents tournament)
-- Each agent has pieces values and mobility as its parameters. Population of 80 agents was randomly selected, and tournament was performed. Agents used quinesence search with depth 2. Results turned out to be consistent with common chess pieces valuation i.e queen > rook > bishop > knight.
+- Each agent has pieces values and mobility as its parameters. Population of 80 agents was randomly selected, and tournament was performed. Agents used quinesence search with depth 2. Results turned out to be consistent with common chess pieces valuation i.e queen > rook > bishop ≈ knight.
 
